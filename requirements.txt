@@ -5,7 +5,7 @@ langchain-openai>=0.3.0
 langchain-anthropic>=0.3.0
 
 # Distributed Computing
-ray[default]>=2.35.0
+# ray[default]>=2.35.0  # Optional: Will add in Phase 2 when needed
 celery>=5.4.0
 
 # Communication & Storage
@@ -15,7 +15,7 @@ pymilvus>=2.4.0
 psycopg2-binary>=2.9.0
 
 # Inference
-vllm>=0.6.0  # Will be installed separately
+# vllm>=0.6.0  # Optional: Windows requires long path support, install separately in Phase 3
 torch>=2.5.0
 transformers>=4.47.0
 accelerate>=1.2.0
