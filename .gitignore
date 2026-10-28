@@ -1,0 +1,53 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+*.egg-info/
+dist/
+build/
+
+# Data & Models
+data/raw/*
+data/processed/*
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+models/checkpoints/*.pth
+models/checkpoints/*.ckpt
+*.h5
+
+# Logs
+logs/
+*.log
+
+# Ray
+/tmp/ray/
+
+# Docker
+.env
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Secrets
+*.key
+*.pem
+secrets/
+
+# Jupyter
+.ipynb_checkpoints/
+notebooks/*.ipynb
+
+# Monitoring
+prometheus_data/
+grafana_data/
