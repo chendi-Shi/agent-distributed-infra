@@ -4,7 +4,13 @@ Demonstrates basic multi-agent task decomposition and execution
 """
 import asyncio
 import sys
+import os
 from pathlib import Path
+from dotenv import load_dotenv
+
+# Load environment variables
+env_path = Path(__file__).parent.parent / '.env'
+load_dotenv(env_path)
 
 # Add src to path
 sys.path.insert(0, str(Path(__file__).parent.parent / 'src'))
