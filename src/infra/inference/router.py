@@ -9,6 +9,8 @@ from typing import Optional, Dict
 from langchain_openai import ChatOpenAI
 from langchain_core.messages import HumanMessage
 
+from infra.storage.redis_cache import RedisCache, CacheWithFallback
+
 logger = logging.getLogger(__name__)
 
 
@@ -20,11 +22,16 @@ class ModelRouter:
     3. Use large model (GPT-4/DeepSeek) for complex queries
     """
 
-    def __init__(self, primary_model: str, enable_caching: bool = True):
+    def __init__(self, primary_model: str, enable_caching: bool = True, cache_ttl: int = 3600):
         self.primary_model = primary_model
         self.enable_caching = enable_caching
-        self.cache = {}  # Will be replaced with Redis
+        self.cache_ttl = cache_ttl
         self.logger = logging.getLogger("ModelRouter")
+
+        # Initialize Redis cache with fallback
+        self.redis_cache = RedisCache(default_ttl=cache_ttl)
+        self.redis_cache.connect()
+        self.cache = CacheWithFallback(self.redis_cache)
 
         # Initialize primary LLM
         self.llm = ChatOpenAI(
@@ -141,14 +148,12 @@ class ModelRouter:
         return hashlib.md5(prompt.encode()).hexdigest()
 
     def _get_from_cache(self, key: str) -> Optional[str]:
-        """Get response from cache"""
-        # TODO: Replace with Redis
+        """Get response from cache (Redis with memory fallback)"""
         return self.cache.get(key)
 
     def _save_to_cache(self, key: str, response: str):
-        """Save response to cache"""
-        # TODO: Replace with Redis
-        self.cache[key] = response
+        """Save response to cache (Redis with memory fallback)"""
+        self.cache.set(key, response, ttl=self.cache_ttl)
 
     def get_stats(self) -> Dict:
         """Get routing statistics"""
