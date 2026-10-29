@@ -13,6 +13,7 @@ from infra.communication.message_protocol import (
 )
 from infra.communication.message_queue import MessageQueue
 from agents.multi_agent import AgentRole
+from monitoring.metrics import get_metrics_collector
 
 
 logger = logging.getLogger(__name__)
@@ -42,6 +43,9 @@ class AgentWorker:
 
         self.logger = logging.getLogger(f"AgentWorker-{agent_id}")
         self.running = False
+
+        # Initialize metrics
+        self.metrics = get_metrics_collector()
 
     async def start(self):
         """Start the agent worker loop"""
@@ -116,6 +120,9 @@ class AgentWorker:
 
         start_time = time.time()
 
+        # Update active tasks metric
+        self.metrics.set_agent_active_tasks(self.agent_id, self.role.value, 1)
+
         try:
             self.logger.info(f"Processing task: {task_id}")
 
@@ -130,6 +137,12 @@ class AgentWorker:
             )
 
             execution_time = time.time() - start_time
+
+            # Record metrics for successful task
+            self.metrics.record_agent_task(self.agent_id, self.role.value, "success")
+            self.metrics.record_agent_task_duration(
+                self.agent_id, self.role.value, task_type, execution_time
+            )
 
             # Send response
             await self._send_task_response(
@@ -153,6 +166,10 @@ class AgentWorker:
             execution_time = time.time() - start_time
 
             self.logger.error(f"Task {task_id} failed: {e}")
+
+            # Record metrics for failed task
+            self.metrics.record_agent_task(self.agent_id, self.role.value, "failed")
+            self.metrics.record_error("agent_worker", type(e).__name__)
 
             # Send error response
             await self._send_task_response(

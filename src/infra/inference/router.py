@@ -5,11 +5,13 @@ Decides: cache / small model / large model
 import os
 import hashlib
 import logging
+import time
 from typing import Optional, Dict
 from langchain_openai import ChatOpenAI
 from langchain_core.messages import HumanMessage
 
 from infra.storage.redis_cache import RedisCache, CacheWithFallback
+from monitoring.metrics import get_metrics_collector
 
 logger = logging.getLogger(__name__)
 
@@ -27,6 +29,9 @@ class ModelRouter:
         self.enable_caching = enable_caching
         self.cache_ttl = cache_ttl
         self.logger = logging.getLogger("ModelRouter")
+
+        # Initialize metrics collector
+        self.metrics = get_metrics_collector()
 
         # Initialize Redis cache with fallback
         self.redis_cache = RedisCache(default_ttl=cache_ttl)
@@ -73,6 +78,7 @@ class ModelRouter:
         Returns:
             Model response
         """
+        start_time = time.time()
         self.stats["total_requests"] += 1
 
         # Step 1: Check cache
@@ -83,7 +89,14 @@ class ModelRouter:
             if cached_response:
                 self.stats["cache_hits"] += 1
                 self.logger.debug(f"Cache hit for agent {agent_id}")
+
+                # Record metrics
+                self.metrics.record_cache_hit()
+                self.metrics.record_router_request("cache", time.time() - start_time)
+
                 return cached_response
+            else:
+                self.metrics.record_cache_miss()
 
         # Step 2: Decide routing strategy
         if force_large_model:
@@ -104,9 +117,14 @@ class ModelRouter:
             cache_key = self._generate_cache_key(prompt)
             self._save_to_cache(cache_key, response)
 
+        # Record metrics
+        response_time = time.time() - start_time
+        self.metrics.record_router_request(route, response_time)
+
         self.logger.info(
             f"Request routed to {route} model for agent {agent_id} "
-            f"(Cache: {self.stats['cache_hits']}/{self.stats['total_requests']})"
+            f"(Cache: {self.stats['cache_hits']}/{self.stats['total_requests']}) "
+            f"in {response_time:.2f}s"
         )
 
         return response
