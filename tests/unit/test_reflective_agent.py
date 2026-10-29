@@ -302,8 +302,10 @@ class TestReflectiveAgent:
             json.dumps({"need_replan": False, "reason": "顺利", "actions": []}),
             # 执行任务2
             "任务2完成",
-            # 最终反思
+            # 第二次反思（完成）
             json.dumps({"need_replan": False, "reason": "完成", "actions": []}),
+            # 最终反思
+            json.dumps({"need_replan": False, "reason": "全部完成", "actions": []}),
         ]
 
         agent = ReflectiveAgent(mock_llm, reflection_interval=1)
