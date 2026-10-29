@@ -1,0 +1,81 @@
+{
+  "checkpoint_id": "checkpoint_20261029_183553_385923",
+  "timestamp": "2026-10-29T18:35:53.386003",
+  "dag_state": {
+    "tasks": {
+      "1": {
+        "task_id": "1",
+        "task_type": "subtask",
+        "description": "需求分析",
+        "parameters": {},
+        "dependencies": [],
+        "status": "pending",
+        "result": null,
+        "error": null,
+        "max_retries": 3,
+        "retry_count": 0,
+        "start_time": null,
+        "end_time": null,
+        "assigned_agent": null,
+        "required_role": null
+      },
+      "2": {
+        "task_id": "2",
+        "task_type": "subtask",
+        "description": "方案设计",
+        "parameters": {},
+        "dependencies": [
+          "1"
+        ],
+        "status": "pending",
+        "result": null,
+        "error": null,
+        "max_retries": 3,
+        "retry_count": 0,
+        "start_time": null,
+        "end_time": null,
+        "assigned_agent": null,
+        "required_role": null
+      },
+      "3": {
+        "task_id": "3",
+        "task_type": "subtask",
+        "description": "实现代码",
+        "parameters": {},
+        "dependencies": [
+          "2"
+        ],
+        "status": "pending",
+        "result": null,
+        "error": null,
+        "max_retries": 3,
+        "retry_count": 0,
+        "start_time": null,
+        "end_time": null,
+        "assigned_agent": null,
+        "required_role": null
+      },
+      "4": {
+        "task_id": "4",
+        "task_type": "subtask",
+        "description": "测试验证",
+        "parameters": {},
+        "dependencies": [
+          "3"
+        ],
+        "status": "pending",
+        "result": null,
+        "error": null,
+        "max_retries": 3,
+        "retry_count": 0,
+        "start_time": null,
+        "end_time": null,
+        "assigned_agent": null,
+        "required_role": null
+      }
+    },
+    "modifications": []
+  },
+  "reason": "Initial plan",
+  "metadata": {}
+}

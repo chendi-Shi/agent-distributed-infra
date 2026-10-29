@@ -1,0 +1,22 @@
+{
+  "task_type": "doc_generation",
+  "baseline": {
+    "total": 10,
+    "successful": 10,
+    "success_rate": 1.0,
+    "avg_execution_time": 0.5539917,
+    "avg_reflection_count": 0.0
+  },
+  "react": {
+    "total": 10,
+    "successful": 10,
+    "success_rate": 1.0,
+    "avg_execution_time": 1.1792529,
+    "avg_reflection_count": 0.0
+  },
+  "improvement": {
+    "success_rate": 0.0,
+    "execution_time": -112.86472342455673
+  },
+  "timestamp": "2026-10-29T18:36:55.612706"
+}

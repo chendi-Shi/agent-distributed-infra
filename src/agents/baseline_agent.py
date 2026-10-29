@@ -54,8 +54,25 @@ class BaselineAgent:
         logger.info("Decomposing task (one-time planning)...")
         subtasks = await self._decompose_task(task_description)
 
-        # 2. 构建静态 DAG
-        dag = self._build_dag(subtasks)
+        # 2. 构建静态 DAG（可能失败）
+        try:
+            dag = self._build_dag(subtasks)
+        except ValueError as e:
+            # 规划失败（如循环依赖），直接返回失败
+            logger.error(f"Failed to build DAG: {e}")
+            end_time = datetime.now()
+            execution_time = (end_time - start_time).total_seconds()
+
+            return {
+                "success": False,
+                "task_description": task_description,
+                "execution_time": execution_time,
+                "dag_statistics": {"total": 0, "completed": 0, "failed": 1},
+                "reflections": [],
+                "reflection_count": 0,
+                "system_stats": self.monitor.get_statistics(),
+                "error": str(e)
+            }
 
         # 3. 按序执行（无反思）
         completed_tasks = 0

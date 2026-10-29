@@ -1,0 +1,90 @@
+{
+  "system_design": {
+    "task_type": "system_design",
+    "baseline": {
+      "total": 10,
+      "successful": 10,
+      "success_rate": 1.0,
+      "avg_execution_time": 0.5580853,
+      "avg_reflection_count": 0.0
+    },
+    "react": {
+      "total": 10,
+      "successful": 10,
+      "success_rate": 1.0,
+      "avg_execution_time": 1.1913092,
+      "avg_reflection_count": 0.0
+    },
+    "improvement": {
+      "success_rate": 0.0,
+      "execution_time": -113.46364077319365
+    },
+    "timestamp": "2026-10-29T18:35:57.051910"
+  },
+  "code_review": {
+    "task_type": "code_review",
+    "baseline": {
+      "total": 10,
+      "successful": 10,
+      "success_rate": 1.0,
+      "avg_execution_time": 0.5515865,
+      "avg_reflection_count": 0.0
+    },
+    "react": {
+      "total": 10,
+      "successful": 10,
+      "success_rate": 1.0,
+      "avg_execution_time": 1.1843458999999998,
+      "avg_reflection_count": 0.0
+    },
+    "improvement": {
+      "success_rate": 0.0,
+      "execution_time": -114.71625937183015
+    },
+    "timestamp": "2026-10-29T18:36:16.543890"
+  },
+  "data_analysis": {
+    "task_type": "data_analysis",
+    "baseline": {
+      "total": 10,
+      "successful": 10,
+      "success_rate": 1.0,
+      "avg_execution_time": 0.5514281000000001,
+      "avg_reflection_count": 0.0
+    },
+    "react": {
+      "total": 10,
+      "successful": 10,
+      "success_rate": 1.0,
+      "avg_execution_time": 1.1931664999999998,
+      "avg_reflection_count": 0.0
+    },
+    "improvement": {
+      "success_rate": 0.0,
+      "execution_time": -116.37752954555627
+    },
+    "timestamp": "2026-10-29T18:36:36.145209"
+  },
+  "doc_generation": {
+    "task_type": "doc_generation",
+    "baseline": {
+      "total": 10,
+      "successful": 10,
+      "success_rate": 1.0,
+      "avg_execution_time": 0.5539917,
+      "avg_reflection_count": 0.0
+    },
+    "react": {
+      "total": 10,
+      "successful": 10,
+      "success_rate": 1.0,
+      "avg_execution_time": 1.1792529,
+      "avg_reflection_count": 0.0
+    },
+    "improvement": {
+      "success_rate": 0.0,
+      "execution_time": -112.86472342455673
+    },
+    "timestamp": "2026-10-29T18:36:55.612706"
+  }
+}

@@ -14,9 +14,15 @@ from pathlib import Path
 from typing import List, Dict, Any
 from datetime import datetime
 import logging
+import sys
+import os
+
+# 添加项目根目录到 Python 路径
+sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from src.agents.baseline_agent import BaselineAgent
 from src.agents.integrated_agent import IntegratedReflectiveAgent
+from src.infra.llm.deepseek_client import DeepSeekClient
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -89,51 +95,114 @@ TEST_TASKS = {
 
 
 class MockLLMClient:
-    """Mock LLM 客户端（用于快速测试）"""
+    """Mock LLM 客户端（用于快速测试，会制造问题以触发反思）"""
+
+    def __init__(self):
+        self.task_counter = 0
+        self.failure_rate = 0.2  # 20% 任务失败
+        self.replan_rate = 0.3   # 30% 触发重新规划
 
     async def generate(self, prompt: str) -> str:
         """模拟 LLM 生成"""
         await asyncio.sleep(0.1)  # 模拟网络延迟
+        import random
 
         if "分解" in prompt or "子任务" in prompt:
-            # 返回任务分解
-            return json.dumps([
-                {"id": "1", "description": "需求分析", "dependencies": []},
-                {"id": "2", "description": "方案设计", "dependencies": ["1"]},
-                {"id": "3", "description": "实现代码", "dependencies": ["2"]},
-                {"id": "4", "description": "测试验证", "dependencies": ["3"]},
-            ])
+            # 返回任务分解（偶尔返回有问题的规划）
+            if random.random() < 0.15:
+                # 15% 概率：循环依赖（会被 DAG 验证拒绝）
+                return json.dumps([
+                    {"id": "1", "description": "需求分析", "dependencies": ["3"]},
+                    {"id": "2", "description": "方案设计", "dependencies": ["1"]},
+                    {"id": "3", "description": "实现代码", "dependencies": ["2"]},
+                ])
+            elif random.random() < 0.2:
+                # 20% 概率：子任务太少（需要补充）
+                return json.dumps([
+                    {"id": "1", "description": "需求分析", "dependencies": []},
+                    {"id": "2", "description": "实现代码", "dependencies": ["1"]},
+                ])
+            else:
+                # 正常规划
+                return json.dumps([
+                    {"id": "1", "description": "需求分析", "dependencies": []},
+                    {"id": "2", "description": "方案设计", "dependencies": ["1"]},
+                    {"id": "3", "description": "实现代码", "dependencies": ["2"]},
+                    {"id": "4", "description": "测试验证", "dependencies": ["3"]},
+                ])
+
         elif "反思" in prompt or "调整" in prompt:
-            # 返回反思结果（20% 概率需要调整）
-            import random
-            if random.random() < 0.2:
-                return json.dumps({
-                    "need_replan": True,
-                    "reason": "发现遗漏子任务",
-                    "actions": ["添加新任务"],
-                    "new_subtasks": [
-                        {"id": "3.5", "description": "代码审查", "dependencies": ["3"]}
-                    ]
-                })
+            # 返回反思结果
+            if random.random() < self.replan_rate:
+                # 触发重新规划
+                replan_type = random.choice([
+                    "add_task",
+                    "modify_task",
+                    "remove_task",
+                ])
+
+                if replan_type == "add_task":
+                    return json.dumps({
+                        "need_replan": True,
+                        "reason": "发现遗漏关键步骤：代码审查",
+                        "actions": ["添加新任务"],
+                        "new_subtasks": [
+                            {"id": "3.5", "description": "代码审查与优化", "dependencies": ["3"]}
+                        ],
+                        "modify_subtasks": {},
+                        "remove_subtask_ids": []
+                    })
+                elif replan_type == "modify_task":
+                    return json.dumps({
+                        "need_replan": True,
+                        "reason": "方案设计粒度太粗，需要细化",
+                        "actions": ["修改任务描述"],
+                        "new_subtasks": [],
+                        "modify_subtasks": {
+                            "2": "详细方案设计：技术选型、架构设计、容量规划"
+                        },
+                        "remove_subtask_ids": []
+                    })
+                else:  # remove_task
+                    return json.dumps({
+                        "need_replan": True,
+                        "reason": "任务4与任务3重复，移除",
+                        "actions": ["移除重复任务"],
+                        "new_subtasks": [],
+                        "modify_subtasks": {},
+                        "remove_subtask_ids": ["4"]
+                    })
             else:
                 return json.dumps({
                     "need_replan": False,
-                    "reason": "执行顺利",
+                    "reason": "执行顺利，无需调整",
                     "actions": []
                 })
+
         else:
-            # 返回执行结果
-            return "任务执行完成"
+            # 执行任务（偶尔失败）
+            self.task_counter += 1
+            if random.random() < self.failure_rate:
+                # 任务失败
+                raise Exception(f"任务执行失败：模拟错误 #{self.task_counter}")
+            else:
+                return f"任务执行完成（计数: {self.task_counter}）"
 
 
 class ExperimentRunner:
     """实验运行器"""
 
-    def __init__(self, output_dir: str = "experiments/results"):
+    def __init__(self, output_dir: str = "experiments/results", use_real_llm: bool = True):
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(parents=True, exist_ok=True)
 
-        self.llm = MockLLMClient()
+        # 使用真实 LLM 或 Mock
+        if use_real_llm:
+            self.llm = DeepSeekClient()
+            logger.info("Using real DeepSeek API")
+        else:
+            self.llm = MockLLMClient()
+            logger.info("Using Mock LLM")
 
     async def run_comparison(
         self,
