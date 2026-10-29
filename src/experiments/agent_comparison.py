@@ -44,7 +44,7 @@ class ExecutionMetrics:
             "mode": self.mode,
             "task_id": self.task_id,
             "success": self.success,
-            "execution_time": execution_time,
+            "execution_time": self.execution_time,
             "api_calls": self.api_calls,
             "tokens_used": self.tokens_used,
             "error": self.error,

@@ -1,0 +1,228 @@
+{
+  "dashboard": {
+    "title": "Agent Infrastructure Monitoring",
+    "uid": "agent-infra-dashboard",
+    "version": 1,
+    "timezone": "browser",
+    "tags": ["agent", "multi-agent", "infrastructure"],
+    "editable": true,
+    "graphTooltip": 1,
+    "time": {
+      "from": "now-1h",
+      "to": "now"
+    },
+    "refresh": "10s",
+    "panels": [
+      {
+        "id": 1,
+        "title": "Agent Task Success Rate",
+        "type": "graph",
+        "gridPos": { "x": 0, "y": 0, "w": 12, "h": 8 },
+        "targets": [
+          {
+            "expr": "rate(agent_tasks_total{status=\"success\"}[5m]) / rate(agent_tasks_total[5m]) * 100",
+            "legendFormat": "{{agent_id}} - {{role}}",
+            "refId": "A"
+          }
+        ],
+        "yaxes": [
+          { "format": "percent", "min": 0, "max": 100 },
+          { "format": "short" }
+        ],
+        "legend": { "show": true, "alignAsTable": true, "rightSide": true }
+      },
+      {
+        "id": 2,
+        "title": "Router Cache Hit Rate",
+        "type": "stat",
+        "gridPos": { "x": 12, "y": 0, "w": 6, "h": 4 },
+        "targets": [
+          {
+            "expr": "router_cache_hits_total / (router_cache_hits_total + router_cache_misses_total) * 100",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                { "value": 0, "color": "red" },
+                { "value": 50, "color": "yellow" },
+                { "value": 80, "color": "green" }
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 3,
+        "title": "Active Tasks per Agent",
+        "type": "stat",
+        "gridPos": { "x": 18, "y": 0, "w": 6, "h": 4 },
+        "targets": [
+          {
+            "expr": "agent_active_tasks",
+            "legendFormat": "{{agent_id}}",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short",
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                { "value": 0, "color": "green" },
+                { "value": 5, "color": "yellow" },
+                { "value": 10, "color": "red" }
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 4,
+        "title": "Task Execution Time (p95)",
+        "type": "graph",
+        "gridPos": { "x": 0, "y": 8, "w": 12, "h": 8 },
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, rate(agent_task_duration_seconds_bucket[5m]))",
+            "legendFormat": "{{agent_id}} - {{task_type}}",
+            "refId": "A"
+          }
+        ],
+        "yaxes": [
+          { "format": "s", "min": 0 },
+          { "format": "short" }
+        ]
+      },
+      {
+        "id": 5,
+        "title": "Router Response Time by Route Type",
+        "type": "graph",
+        "gridPos": { "x": 12, "y": 8, "w": 12, "h": 8 },
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, rate(router_response_time_seconds_bucket[5m]))",
+            "legendFormat": "{{route_type}} (p95)",
+            "refId": "A"
+          },
+          {
+            "expr": "histogram_quantile(0.50, rate(router_response_time_seconds_bucket[5m]))",
+            "legendFormat": "{{route_type}} (p50)",
+            "refId": "B"
+          }
+        ],
+        "yaxes": [
+          { "format": "s", "min": 0 },
+          { "format": "short" }
+        ]
+      },
+      {
+        "id": 6,
+        "title": "Message Queue Size",
+        "type": "graph",
+        "gridPos": { "x": 0, "y": 16, "w": 8, "h": 6 },
+        "targets": [
+          {
+            "expr": "queue_size",
+            "legendFormat": "{{queue_name}}",
+            "refId": "A"
+          }
+        ],
+        "yaxes": [
+          { "format": "short", "min": 0 },
+          { "format": "short" }
+        ]
+      },
+      {
+        "id": 7,
+        "title": "Message Processing Rate",
+        "type": "graph",
+        "gridPos": { "x": 8, "y": 16, "w": 8, "h": 6 },
+        "targets": [
+          {
+            "expr": "rate(queue_messages_consumed_total{status=\"ack\"}[5m])",
+            "legendFormat": "{{queue_name}} (success)",
+            "refId": "A"
+          },
+          {
+            "expr": "rate(queue_messages_consumed_total{status=\"nack\"}[5m])",
+            "legendFormat": "{{queue_name}} (failed)",
+            "refId": "B"
+          }
+        ],
+        "yaxes": [
+          { "format": "ops", "min": 0 },
+          { "format": "short" }
+        ]
+      },
+      {
+        "id": 8,
+        "title": "Redis Memory Usage",
+        "type": "graph",
+        "gridPos": { "x": 16, "y": 16, "w": 8, "h": 6 },
+        "targets": [
+          {
+            "expr": "redis_memory_used_bytes",
+            "legendFormat": "Memory Used",
+            "refId": "A"
+          }
+        ],
+        "yaxes": [
+          { "format": "bytes", "min": 0 },
+          { "format": "short" }
+        ]
+      },
+      {
+        "id": 9,
+        "title": "Workflow Execution Time",
+        "type": "graph",
+        "gridPos": { "x": 0, "y": 22, "w": 12, "h": 6 },
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, rate(workflow_duration_seconds_bucket[5m]))",
+            "legendFormat": "{{workflow_id}} (p95)",
+            "refId": "A"
+          }
+        ],
+        "yaxes": [
+          { "format": "s", "min": 0 },
+          { "format": "short" }
+        ]
+      },
+      {
+        "id": 10,
+        "title": "System Errors",
+        "type": "graph",
+        "gridPos": { "x": 12, "y": 22, "w": 12, "h": 6 },
+        "targets": [
+          {
+            "expr": "rate(system_errors_total[5m])",
+            "legendFormat": "{{component}} - {{error_type}}",
+            "refId": "A"
+          }
+        ],
+        "yaxes": [
+          { "format": "ops", "min": 0 },
+          { "format": "short" }
+        ],
+        "alert": {
+          "name": "High Error Rate",
+          "conditions": [
+            {
+              "evaluator": { "type": "gt", "params": [0.1] },
+              "operator": { "type": "and" },
+              "query": { "params": ["A", "5m", "now"] },
+              "reducer": { "type": "avg" },
+              "type": "query"
+            }
+          ]
+        }
+      }
+    ]
+  }
+}
